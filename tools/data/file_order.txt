@@ -1,0 +1,97 @@
+ymir work/effect/etc/buff/buff_item1.mse
+ymir work/pc2/warrior/warrior_wc26.dds
+ymir work/tree/n2_palmetto_rt_03.spt
+ymir work/ui/game/taskbar/0.sub
+bgm/last-war2.mp3
+sound/pc2/warrior/skill/sajahoo1.wav
+icon/item/02160.tga
+icon/item/41072.tga
+ymir work/effect/hit/blow_1/line_ring_copy.dds
+ymir work/effect/etc/guild_war_flag/flag_yellow.mse
+sound/effect/etc/levelup_2/2.mss
+ymir work/effect/background/f2.dds
+ymir work/pc/shaman/effect/7budongbakbu_making.mse
+ymir work/pc/shaman/effect/spread.mse
+ymir work/pc/assassin/dualhand_sword/wait_1.msa
+ymir work/effect/etc/firecracker/firecracker_1.mse
+sound/common/spell/spell_magician_mystery_power.wav
+property/n/obj/snow.m/snow_4fbuilding_02.dds
+ymir work/pc/warrior/horse_onehand_sword/combo_01.msa
+sound/pc/sura/skill/hwayeom_2.mss
+ymir work/pc2/warrior/hair/hair_4_4.dds
+sound/pc2/warrior/general/attack_1.mss
+ymir work/pc/assassin/horse_bow/skill_splash.msa
+sound/monster2/spider_king/dead_walk_1.wav
+ymir work/pc2/assassin/hair/hair_6_1.gr2
+sound/pc/warrior/skill/gigongsul.mss
+ymir work/pc/sura/horse/wait_1.msa
+sound/pc/shaman/skill/jeungche_me.mss
+ymir work/pc2/sura/hair/hair_30_1.dds
+sound/pc2/sura/fishing/fishing_cancel.mss
+ymir work/pc/shaman/hair/hair_3_4.gr2
+sound/pc/assassin/skill/hwajo_shot.wav
+ymir work/pc2/shaman/hair/hair_9_1.gr2
+sound/pc2/assassin/skill/charyun.mss
+bgm/characterselect.mp3
+ymir work/pc/warrior/warrior_4-1.gr2
+ymir work/pc/warrior/warrior_deer1.dds
+ymir work/pc/warrior/effect/orange_cure copy.dds
+ymir work/uiloading/base/background_loading_sura2.sub
+ymir work/special/water/08.dds
+metin2_map_a1/003000/minimap.dds
+ymir work/terrainmaps/b/grass/grass 02_01.dds
+metin2_map/002004/water.wtr
+metin2_map_trent02/002003/shadowmap.dds
+ymir work/zone/b/obj/general_obj_itembox01.mdatr
+ymir work/tree/compositeshadowmapb1.dds
+ymir work/tree/christmastreeleave1_2.dds
+ymir work/tree/b1_montereycypress_rt2.spt
+metin2_map_a1/000004/tile.raw
+ymir work/zone/b/obj/b-general_wbridge01.mdatr
+ymir work/zone/a/building/a1-011-workhouse-02.dds
+ymir work/zone/b/building/b1-010-bank-01.dds
+ymir work/zone/b/obj/ob-7-01.gr2
+ymir work/uiloading/purgatory/loading2.sub
+ymir work/zone/b/obj/ob-standganpan-03.mdatr
+ymir work/zone/a/building/a1-landmark-01-bellhouse-02.dds
+ymir work/effect/monster2/fireball.dds
+ymir work/pc/warrior/action/dance_6.msa
+ymir work/pc/sura/effect/gwi_geom_spark copy.dds
+ymir work/pc/sura/action/dance_5.msa
+ymir work/pc/shaman/action/dance_4.msa
+ymir work/environment/snowm02.msenv
+ymir work/pc/sura/sura_wc31.dds
+ymir work/pc/warrior/warrior_wc24.dds
+ymir work/pc/warrior/hair/hair_24_4.dds
+ymir work/pc2/warrior/action/dance_6.msa
+ymir work/pc2/sura/sura_wc24.dds
+ymir work/pc2/warrior/twohand_sword/combo_07.msa
+ymir work/pc/assassin/general/dead.msa
+ymir work/npc2/zombie_ghost_door/open.msa
+ymir work/pc/assassin/action/dance_5.msa
+ymir work/pc/assassin/assassin_yeongrin.dds
+ymir work/pc/assassin/hair/hair_2_1.gr2
+ymir work/pc2/assassin/assassin_yonga.dds
+ymir work/pc2/assassin/action/dance_1.msa
+ymir work/pc2/assassin/action/shy.msa
+ymir work/pc/sura/effect/yonggwonpabig.mde
+ymir work/pc/shaman/shaman_wc27.dds
+ymir work/pc/sura/hair/hair_2_2.gr2
+ymir work/pc2/sura/general/dead.msa
+ymir work/pc2/sura/action/dance_4.msa
+ymir work/pc2/sura/onehand_sword/rampage_03.msa
+ymir work/pc2/shaman/shaman_wc24.dds
+sound/pc2/shaman/skill/bierak.wav
+ymir work/pc2/shaman/bell/rampage_02.msa
+ymir work/pc2/shaman/action/dance_1.msa
+ymir work/ui/skill/assassin/amseup_01.sub
+ymir work/ui/game/949_mapname/monkey2.tga
+channel.inf
+season1/effect/pc/sura/effect/linrspark copy.jpg
+bgm/enter_the_east.mp3
+ymir work/guild/object/guild_symbol/guild_symbol.gr2
+ymir work/item/weapon/01090.gr2
+ymir work/monster/skeleton_wizard/00_1.msa
+sound/monster/spite_ghost/fall_act_1.wav
+ymir work/monster/thiefboss3/20.msa
+ymir work/monster/wolf/wolf_blue.msm

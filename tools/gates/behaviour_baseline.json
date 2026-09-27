@@ -1,0 +1,17 @@
+{
+ "missing": "",
+ "bridge": true,
+ "frame_blocks": 39,
+ "js_errors": [],
+ "reads": 78,
+ "rejected": "",
+ "screenshot": "353a92945bfab54372dc520d5bdf79c91536e72d712a7bb200a9bbb399bcf003",
+ "screenshot_stable": false,
+ "stubs_hit": [
+  "D3D8::SetPixelShaderConstant",
+  "D3D8::SetVertexShaderConstant",
+  "Granny::SetLogCallback"
+ ],
+ "syserr": "Could not find platform dependent libraries <exec_prefix>\n<time> :: CMovieMan::PlayLogo - no file logo1.avi\n<time> :: CMovieMan::PlayLogo - no file logo2.avi",
+ "webgl": true
+}

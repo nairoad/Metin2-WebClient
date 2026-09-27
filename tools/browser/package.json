@@ -1,0 +1,9 @@
+{
+  "name": "m2w-measure",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Headless measurement of the TMP4 client in the browser",
+  "dependencies": {
+    "puppeteer-core": "^25.12.0"
+  }
+}
