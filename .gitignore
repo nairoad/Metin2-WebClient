@@ -1,0 +1,62 @@
+# ---------------------------------------------------------------------------
+# Inputs the user brings - never versioned (see webclient.example.toml)
+# ---------------------------------------------------------------------------
+# The client sources and the installed client (hundreds of MB, not our work).
+reference/
+
+# The user's build settings: paths on their machine and, optionally,
+# the private server and bridge addresses. The template is webclient.example.toml.
+webclient.toml
+
+# ---------------------------------------------------------------------------
+# Build outputs
+# ---------------------------------------------------------------------------
+# build/ holds only what the tools produce (stage, obj, lib, data, client.*,
+# private/). Ignore its CONTENT, not the directory itself: git does not enter
+# an ignored directory, so exceptions below it would never apply (once
+# the whole port layer went unversioned that way).
+build/*
+!build/port/
+build/port/*
+!build/port/README.md
+
+__pycache__/
+*.pyc
+*.obj
+*.exe
+*.pdb
+*.ilk
+
+# test outputs (generated, compared with `fc`)
+cpp_out.txt
+py_out.txt
+build/slice/*.js
+build/slice/*.wasm
+build/slice/*.o
+build/vendor/
+build/slice/patch.bin
+build/slice/shader_*.glsl
+build/slice/tex0.rgba
+build/slice/splat.bin
+build/slice/water.bin
+build/slice/*.data
+build/slice/tex0.png
+build/slice/shadow.bin
+build/slice/*.html
+!build/slice/shell.html
+build/port/obj/
+build/port/lib/
+build/port/vendor/
+build/port/*.js
+build/port/*.wasm
+
+# the tree assembled by tools/stage_port.py - generated, not a source
+build/port/stage/
+
+# packages to upload (tools/package.py)
+dist/
+
+# the bridge's npm dependencies (`cd bridge && npm ci` from package-lock.json);
+# a local bridge config may hold real server addresses
+bridge/node_modules/
+bridge/config.local.json
