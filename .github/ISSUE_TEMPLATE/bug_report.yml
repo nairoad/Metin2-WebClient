@@ -1,0 +1,52 @@
+name: Bug report
+description: Something does not build, does not start, or behaves wrongly in the game.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not paste private data.** No game server address, no passwords,
+        no `loginInfo.xml`, no `webclient.toml` with your paths if you do not
+        want them public. Replace them with `<server>`, `<path>`.
+
+        **A security problem?** Do not open an issue - report it privately
+        (Security tab -> Report a vulnerability, see SECURITY.md).
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where does it happen?
+      options:
+        - Building (python webclient.py build)
+        - Starting the client in the browser
+        - In the game
+        - The bridge / connecting to the server
+        - Deploying on a web server
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `python webclient.py doctor`
+      render: text
+  - type: textarea
+    id: log
+    attributes:
+      label: The failing step's output, or the browser console (F12)
+      description: For a build problem, the end of build/webclient-build.log. For the game, the console lines around the problem.
+      render: text
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and system
+      placeholder: e.g. Chrome 140 on Windows 11
+  - type: input
+    id: version
+    attributes:
+      label: Commit you built from
+      placeholder: output of `git log --oneline -1`

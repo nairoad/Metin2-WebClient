@@ -1,0 +1,14 @@
+name: Idea or improvement
+description: Something that would make the kit or the client better.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like, and why?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything that helps (a measurement, a screenshot, how you would do it)

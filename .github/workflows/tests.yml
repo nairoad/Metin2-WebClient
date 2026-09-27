@@ -1,0 +1,38 @@
+# The checks that need no game files: the bridge, the page options, and the
+# syntax of every script. The client itself cannot be built here - that needs
+# your TMP4 sources and packs (see docs/BUILDING.md).
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Bridge tests
+        working-directory: bridge
+        run: |
+          npm ci
+          npm test
+      - name: Page options on a real site vs a local page
+        run: node compat/tests/runtime_options_test.js
+      - name: JavaScript syntax
+        run: |
+          for f in compat/runtime.js site/*.js bridge/src/*.js tools/browser/*.js; do
+            node --check "$f"
+          done
+      - name: Python syntax
+        run: python -m compileall -q tools webclient.py
