@@ -1,0 +1,15 @@
+{
+  "listenHost": "127.0.0.1",
+  "listenPort": 9000,
+  "defaultTarget": "auth",
+  "maxConnections": 200,
+  "idleTimeoutMs": 0,
+  "heartbeatMs": 30000,
+  "tcpConnectTimeoutMs": 5000,
+  "highWaterMarkBytes": 1048576,
+  "allowedOrigins": ["http://127.0.0.1:8731", "http://localhost:8731"],
+  "targets": {
+    "auth": { "host": "127.0.0.1", "port": 11002 },
+    "game": { "host": "127.0.0.1", "port": 13000 }
+  }
+}

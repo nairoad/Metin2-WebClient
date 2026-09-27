@@ -1,0 +1,17 @@
+{
+  "name": "ws-tcp-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Transparent WebSocket <-> TCP bridge for the browser game client. Never parses the game protocol.",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
