@@ -1,0 +1,72 @@
+# webclient.example.toml - the settings of your WebClient build.
+#
+# Copy this file to `webclient.toml` (git-ignored) and change what differs on
+# your machine. Every key is optional: a missing one keeps the default shown
+# here. Relative paths are relative to the repository root. An environment
+# variable, where named, overrides the file.
+#
+# `python tools/workspace.py` prints what the tools will use.
+
+[inputs]
+# Your client sources: a directory with `source/<library>` (GameLib, EterLib,
+# UserInterface, ...) and `extern/include`, `extern/library`.   (M2W_SOURCE)
+source = "reference/tmp4_source"
+
+# Your installed game client (the directory with the packs; the offline
+# bakers also take SpeedTreeRT.dll and granny2.dll from it).    (M2W_CLIENT)
+client = "reference/Client"
+
+# The packs (.eix/.epk), when they are not in `<client>/pack`.  (M2W_PACKS)
+# packs = "reference/Client/pack"
+
+# The UI font the page registers as "Tahoma" (not in the packs). Default: the
+# Windows system font C:/Windows/Fonts/tahoma.ttf.                  (M2W_FONT)
+# font = "C:/Windows/Fonts/tahoma.ttf"
+
+[tools]
+# The Emscripten SDK.                                           (EMSDK)
+emsdk = "C:/emsdk"
+
+# A Python 3.12 or older (it still has lib2to3) - rewrites the game's
+# Python 2 scripts to Python 3.                                  (M2W_PYTHON_2TO3)
+# python2to3 = "~/AppData/Local/Programs/Python/Python310/python.exe"
+
+# MSVC Build Tools 2022, x86 environment - only for the offline Windows tools
+# (SpeedTree baker, .gr2 repair).                                (M2W_VCVARS32)
+# vcvars32 = "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Auxiliary/Build/vcvars32.bat"
+
+[server]
+# PRIVATE - never commit these. They can also live in
+# build/port/private/server.txt and build/port/private/bridge.txt.
+#
+# The game server address written into the client's serverInfo.py.  (M2W_SERVER)
+# address = "game.example.com"
+#
+# The WebSocket bridge the page connects through by default; empty means the
+# page's own host (`wss://<page host>/to/<server>:<port>`).        (M2W_BRIDGE)
+# bridge = "wss://game.example.com"
+
+[bridge]
+# Our WebSocket -> TCP bridge (bridge/, started by `python webclient.py serve`).
+# It connects ONLY to the addresses of the game's server list (serverInfo.py of
+# the built client data) plus these - never to an address the browser names.
+# targets = ["game.example.com:13100"]
+#
+# The game cores the server announces at run time (after the character is
+# chosen) are other ports of the same host; this many ports from each port of
+# the server list up are allowed on the server's hosts (0 = only the listed).
+# Nothing but the game may listen on those ports of that host - the bridge
+# would let the internet reach it. Lower it to what your cores really use.
+# port_span = 100
+#
+# Sessions one player address may hold at once (a player uses 1-2); 0 = no
+# limit. Only with the real player address reaching the bridge (nginx
+# X-Forwarded-For, and behind Cloudflare the real_ip settings) - see
+# docs/DEPLOYMENT.md.
+# max_per_address = 0
+#
+# The port the bridge listens on; the client looks for 11496 on localhost.
+# listen = 11496
+#
+# Page origins allowed to connect besides the local page (http://127.0.0.1:8731).
+# origins = ["https://play.example.com"]
