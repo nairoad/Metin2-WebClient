@@ -1,0 +1,390 @@
+<!doctype html>
+<!--
+  measure_shell.html - the MEASURING page of the client. link_client.py copies it to build/port/client_measure.html;
+  tools/browser/measure.js and the gates check_behaviour / check_probe run it.
+  The page players get is site/client.html (minimal, no instrumentation).
+
+  Our own page, like site/client.html, plus the instrumentation below. It
+  starts the engine the same way (`client.js`, which fetches `client.wasm`),
+  so a measurement here measures the client players get.
+
+  LOG AND COUNTER
+  ---------------------------------------------------------------------------
+  They stay, because without them nothing in the game can be measured. The
+  counter stands in the corner and fits in one screenshot; the log is hidden
+  unless the URL has `?log=1` or `?run=1`.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Metin2 - measure</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden; background: #000; color: #ccc;
+    font: 13px/1.5 system-ui, sans-serif;
+  }
+  /* `!important`, because emscripten puts its OWN inline style on the canvas
+     when the client asks for a resolution (`emscripten_set_canvas_element_size`).
+     Without it the canvas is 1253 px in a window narrower than 1253 px and
+     only its top left corner shows - the rest is past the edge. */
+  canvas#canvas {
+    display: block; outline: 0;
+    width: 100% !important; height: 100% !important;
+  }
+
+  /* The engine start-up text in the middle of the screen. */
+  #status {
+    position: absolute; left: 0; right: 0; top: 50%;
+    transform: translateY(-50%); text-align: center;
+    pointer-events: none; color: #9a8f7c; font-size: 13px;
+  }
+  #status.done { display: none; }
+
+  /* THE ON-SCREEN COUNTER.
+     So that a measurement can be handed over as a SCREENSHOT, not by pasting
+     the log. `?counter=0` hides it. */
+  #counter {
+    position: fixed; right: 6px; top: 6px; z-index: 30;
+    padding: 5px 8px; border-radius: 5px;
+    background: rgba(0, 0, 0, .72); color: #c9b98f;
+    font: 11px/1.35 ui-monospace, monospace; white-space: pre;
+    pointer-events: none; text-shadow: 0 1px 2px #000;
+  }
+  #counter.bad { color: #d08a6a; }
+  #counter.hidden { display: none; }
+
+  /* The log - for measuring, not for people. */
+  #log {
+    display: none;
+    position: fixed; left: 0; right: 0; bottom: 0; max-height: 45%;
+    margin: 0; padding: 8px 10px; overflow: auto; z-index: 20;
+    background: rgba(0, 0, 0, .82); color: #ddd;
+    font: 12px/1.45 ui-monospace, monospace; white-space: pre-wrap;
+  }
+  #log.visible { display: block; }
+</style>
+</head>
+<body>
+<canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="0"></canvas>
+<div id="status">preparing</div>
+<div id="counter">measurement starting</div>
+<pre id="log"></pre>
+
+<script>
+  var logEl = document.getElementById('log');
+  var statusEl = document.getElementById('status');
+  var counterEl = document.getElementById('counter');
+
+  /// Value of a URL parameter, or null when the address has none.
+  function param(name) {
+    try {
+      return new URLSearchParams(location.search).get(name);
+    } catch (e) { return null; }
+  }
+
+  // The log is shown only on request. It is always collected.
+  //
+  // `toConsole` rules printing to F12. OFF by default, because that is work
+  // on the main thread OUTSIDE the client's loop turn - i.e. invisible to the
+  // frame-time accounting, which measures only the inside of `__LoopTurn`.
+  var toConsole = false;
+  if (param('log') !== null || param('run') !== null) {
+    logEl.classList.add('visible');
+    toConsole = true;
+  }
+  if (param('counter') === '0')
+    counterEl.classList.add('hidden');
+
+  // THE LOG HAS AN UPPER BOUND - AND THAT IS NOT TIDINESS BUT PERFORMANCE.
+  //
+  // Every `printf` line was a separate text node in the page tree. With tens
+  // of thousands of lines the tree alone costs more than what it was to
+  // measure. A measurement that breaks the measured thing is worse than none.
+  var LINES_ON_PAGE = 400;
+  var LINES_IN_MEMORY = 20000;
+  globalThis.m2w_log = [];
+
+  var lineCount = 0;
+  var fromWasm = '';
+  var stubsLine = '';
+  var windowLine = '';
+  var gameFps = '';
+  var worstFrame = '';
+  var workLine = '';
+  var lastError = '';
+  var breakdown = [];
+
+  /// Appends one line of client output: feeds the counter (frame statistics,
+  /// window state, stubs), the in-memory log `m2w_log`, the console when
+  /// enabled and the on-page log (bounded).
+  function appendLine(s) {
+    ++lineCount;
+
+    // THE ACCOUNTING FROM THE WASM GOES TO THE COUNTER IN THE CORNER - only
+    // the lines that are NOT zero. The full breakdown has nine of them, and in
+    // a screenshot what matters gets lost among six zeros.
+    try {
+      // GAME FRAMES, NOT SHELL FRAMES.
+      //
+      // The counter used to show frames/s counted from the shell's OWN
+      // `requestAnimationFrame` loop - which ticks sixty times a second no
+      // matter whether the game drew anything. "60 frames/s" meant "the
+      // browser is alive", not "the client draws" - and on that basis I once
+      // judged the loop healthy.
+      //
+      // The real numbers are computed by `compat/frame_stats.cpp` IN THE GAME
+      // LOOP and printed in this line. Now they go to the counter,
+      // and the shell's turns stand next to them as a helper number.
+      if (s.indexOf('m2w frame:') === 0) {
+        var fps = s.match(/([0-9.]+) FPS/);
+        var worst = s.match(/WORST ([0-9.]+) ms/);
+        if (fps) gameFps = fps[1];
+        if (worst) worstFrame = worst[1];
+      } else if (s.indexOf('    WORK') === 0) {
+        workLine = s.trim().replace(' - the rest is waiting for the next frame', '');
+        breakdown = [];
+      } else if (s.indexOf('    WINDOW') === 0) {
+        // THE WINDOW STATE AS THE GAME SEES IT.
+        //
+        // `if (IsActive())` in the main loop decides whether the game does
+        // anything at all, and only the `WM_SIZE` message sets it. Without this
+        // line the symptom "the loop runs, and the work is zero" has no way to
+        // show.
+        windowLine = s.trim();
+      } else if (s.indexOf('    STUBS') === 0) {
+        // WHAT IS MISSING - a separate counter line, not mixed with the time
+        // accounting. The accounting says where the time goes; this one says
+        // what the game reached for in vain.
+        stubsLine = s.trim();
+      } else if (s.indexOf('    ') === 0 && s.indexOf(' ms') > 0) {
+        var part = s.trim().match(/^(\S+(?: \S+){0,2})\s+([0-9.]+) ms/);   // up to 3 words: 'REST OF WORK'
+        if (part && parseFloat(part[2]) >= 0.5)
+          breakdown.push(part[1] + ' ' + part[2]);
+        if (s.indexOf('REST') >= 0)
+          fromWasm = workLine + (breakdown.length ? '\n' + breakdown.join('  ') : '');
+      }
+    } catch (e) { }
+
+    var log = globalThis.m2w_log;
+    log.push(s);
+    if (log.length > LINES_IN_MEMORY)
+      log.splice(0, log.length - LINES_IN_MEMORY);
+
+    if (toConsole) {
+      try { console.log(s); } catch (e) { }
+    }
+
+    logEl.appendChild(document.createTextNode(s + "\n"));
+    while (logEl.childNodes.length > LINES_ON_PAGE)
+      logEl.removeChild(logEl.firstChild);
+  }
+
+  /// Shows `text` in the middle of the screen; an empty text hides it.
+  function setStatus(text) {
+    if (!statusEl) return;
+    statusEl.textContent = text || '';
+    if (!text) statusEl.className = 'done';
+  }
+
+  var Module = {
+    canvas: document.getElementById('canvas'),
+    print: appendLine,
+    /// Engine stderr: into the log with an `[err]` prefix.
+    printErr: function (s) { appendLine('[err] ' + s); },
+    setStatus: setStatus,
+    /// Runtime ready: status text and keyboard focus on the canvas.
+    onRuntimeInitialized: function () {
+      setStatus('starting the client');
+      try { document.getElementById('canvas').focus(); } catch (e) { }
+    },
+    /// Program exit: logs the code and the rest of `syserr.txt`.
+    onExit: function (code) { appendLine('EXIT ' + code); readSyserr(); },
+    /// Abort: logs the reason, shows it as status, reads `syserr.txt`.
+    onAbort: function (what) { appendLine('ABORTED ' + what); setStatus('aborted: ' + what); readSyserr(); }
+  };
+
+  // FOCUS ON THE CANVAS, because without it the client does not draw:
+  // `Process` draws only inside `if (IsActive())`. Measured - the
+  // black screen looked like a drawing error, and was an inactive window.
+  document.addEventListener('mousedown', function () {
+    try { document.getElementById('canvas').focus(); } catch (e) { }
+  }, true);
+
+  // TEN FRAMES ARE TOO FEW. V8 cuts `Error.stack` to ten, and on a
+  // stack overflow the ten deepest frames say nothing: the repeating cycle
+  // lies under them.
+  try { Error.stackTraceLimit = 100; } catch (e) { }
+
+  window.addEventListener('error', function (event) {
+    var trace = (event.error && event.error.stack) ? event.error.stack : '(no trace)';
+    globalThis.m2w_last_stack = trace;
+    appendLine('STACK:\n' + trace);
+  }, true);
+
+  window.addEventListener('unhandledrejection', function (event) {
+    var reason = event.reason;
+    var text = (reason && reason.stack) ? reason.stack : String(reason);
+    globalThis.m2w_last_error = text;
+    appendLine('REJECTED PROMISE:\n' + text);
+  });
+
+  // ---------------------------------------------------------------------
+  // `syserr.txt` ON THE PAGE
+  // ---------------------------------------------------------------------
+  // The only place where the game says what went wrong. Only the GROWTH is
+  // read: `readFile` copies the whole, and in a chatty session the file grows
+  // to tens of megabytes - and that reading runs on the main thread, outside
+  // the loop turn, where the frame-time accounting does not see it.
+  var syserrRead = 0;
+  /// Appends what `syserr.txt` gained since the last call (at most 64 kB) to
+  /// the log and puts its last line on the counter.
+  function readSyserr() {
+    try {
+      var size = Module.FS.stat('syserr.txt').size;
+      if (size <= syserrRead) return;
+
+      var count = size - syserrRead;
+      if (count > 65536) { syserrRead = size - 65536; count = 65536; }
+
+      var buffer = new Uint8Array(count);
+      var handle = Module.FS.open('syserr.txt', 'r');
+      Module.FS.read(handle, buffer, 0, count, syserrRead);
+      Module.FS.close(handle);
+      syserrRead = size;
+
+      var fresh = new TextDecoder('utf-8').decode(buffer);
+      appendLine('--- syserr.txt ---\n' + fresh);
+
+      // THE LAST ERROR LINE GOES TO THE COUNTER.
+      //
+      // `syserr +25440 B/s` says that something fails dozens of times a
+      // second, but not WHAT - and that is the whole content of the number.
+      // Lines with a date in front (`0907 14:07:00176 :: text`) are cut to
+      // the text: the date takes half the room and says nothing.
+      try {
+        var lines = fresh.split('\n').filter(function (l) { return l.trim(); });
+        if (lines.length) {
+          lastError = lines[lines.length - 1].replace(/^\d+ \d+ :: /, '').trim().slice(0, 90);
+        }
+      } catch (e) { }
+    } catch (e) {
+      // The file does not exist yet - the game creates it at the first entry.
+    }
+  }
+  setInterval(readSyserr, 1500);
+
+  // ---------------------------------------------------------------------
+  // THE OPENGL CALL COUNTER AND THE GAPS BETWEEN FRAMES
+  // ---------------------------------------------------------------------
+  // Once the client ran at 0.9 frames a second, and the FRAME time was
+  // 0.2-0.9 ms. It looked like the browser throttling and that is what I
+  // judged - wrongly. Only the call counter showed the truth.
+  var glCalls = 0, shellFrames = 0;
+  var lastFrameTime = 0, largestGap = 0;
+
+  // MEASURING THE GAPS BETWEEN FRAMES IS FREE - AND ALWAYS STAYS ON.
+  //
+  // Earlier it sat in the same block as wrapping the WebGL functions, so
+  // turning off the expensive GL counter killed this cheap one too. Hence the
+  // alarming `shell 0 turns/s` in every reading with the GL counter off - it
+  // was not the browser throttling, but our own early return.
+  (function () {
+    /// requestAnimationFrame callback: counts shell frames and the largest gap.
+    function onFrame(time) {
+      ++shellFrames;
+      if (lastFrameTime > 0) {
+        var gap = time - lastFrameTime;
+        if (gap > largestGap) largestGap = gap;
+      }
+      lastFrameTime = time;
+      requestAnimationFrame(onFrame);
+    }
+    requestAnimationFrame(onFrame);
+  })();
+
+  (function () {
+    // OFF BY DEFAULT - AND THAT IS NOT CAUTION BUT A MEASUREMENT.
+    //
+    // This counter wraps EVERY `WebGL2RenderingContext` function in a
+    // JavaScript wrapper of its own. There are hundreds of functions and the
+    // client calls them hundreds of times a frame - so the wrapper is not a
+    // detail but the main cost of the whole page. Measured on the same client
+    // at the same moment, the only difference being the URL:
+    //
+    //     with the counter:     GAME  1.0 frames/s   WORST FRAME 1997.9 ms
+    //     without the counter:  GAME 60.0 frames/s   WORST FRAME   18.5 ms
+    //
+    // Sixty times. The user reported "the client is unusable, it stutters, I
+    // cannot click anything" and was right.
+    //
+    // Earlier this cost was HIDDEN, because the wrapper did not work: the
+    // loop `for (var name in proto)` made not a single turn, because prototype
+    // methods are not enumerable. "Fixing" it switched on a cost that was not
+    // there before. So it is switched on EXPLICITLY, through
+    // `?glcounter=1`, only when the number of calls
+    // per frame is asked for directly.
+    if (param('glcounter') !== '1') return;
+    if (typeof WebGL2RenderingContext === 'undefined') return;
+
+    // PROTOTYPE METHODS ARE NOT ENUMERABLE - `for...in` saw none
+    // of them. `Object.getOwnPropertyNames` sees them all.
+    var proto = WebGL2RenderingContext.prototype;
+    var names = Object.getOwnPropertyNames(proto);
+    for (var i = 0; i < names.length; ++i) {
+      var name = names[i];
+      try {
+        if (name === 'constructor') continue;
+        if (typeof proto[name] !== 'function') continue;
+        (function (key) {
+          var original = proto[key];
+          proto[key] = function () {
+            ++glCalls;
+            return original.apply(this, arguments);
+          };
+        })(name);
+      } catch (e) { }
+    }
+  })();
+
+  var lastSyserrSize = 0;
+  setInterval(function () {
+    var gap = largestGap; largestGap = 0;
+    var frames = shellFrames, calls = glCalls;
+    shellFrames = 0; glCalls = 0;
+
+    var heap = '?';
+    try {
+      if (performance.memory)
+        heap = (performance.memory.usedJSHeapSize / 1048576).toFixed(0);
+    } catch (e) { }
+
+    // HOW MUCH THE GAME WROTE TO `syserr.txt` - i.e. how much it complains.
+    // When something fails EVERY FRAME, this grows by kilobytes a second, and
+    // the frame-time accounting does not show it at all.
+    var errors = '';
+    try {
+      var now = Module.FS.stat('syserr.txt').size;
+      var growth = now - lastSyserrSize;
+      lastSyserrSize = now;
+      if (growth > 0) errors = '   syserr +' + growth + ' B/s';
+    } catch (e) { }
+
+    counterEl.className = (gap > 100) ? 'bad' : '';
+    counterEl.textContent =
+      (gameFps
+         ? 'GAME ' + gameFps + ' frames/s   WORST FRAME ' + worstFrame + ' ms'
+         : 'the game has not reported a frame yet') + '\n' +
+      'shell ' + frames + ' turns/s, gap ' + gap.toFixed(0) + ' ms   ' +
+      (lastError ? '\nerror: ' + lastError : '') +
+      'GL ' + (frames ? Math.round(calls / frames) : 0) + '/frame' +
+      '   heap ' + heap + ' MB' + errors + '\n' + fromWasm +
+      (windowLine ? '\n' + windowLine : '') +
+      (stubsLine ? '\n' + stubsLine : '');
+  }, 1000);
+</script>
+
+<script src="client.js" async></script>
+</body>
+</html>

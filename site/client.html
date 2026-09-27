@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Metin2</title>
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;color:#ccc;font:13px/1.5 system-ui,sans-serif}
+canvas#canvas{display:block;width:100%;height:100%;outline:0}
+#status{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;pointer-events:none;color:#e8d9b8;text-shadow:0 1px 3px #000}
+#status.done{display:none}
+#m2w_error{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);z-index:30}
+#m2w_error.visible{display:flex}
+#m2w_error div{max-width:min(92vw,560px);background:#16130f;border:1px solid #3a2f22;border-radius:10px;padding:22px 26px;color:#e8d9b8}
+#m2w_error pre{white-space:pre-wrap;color:#9a8f7c;font:12px/1.4 ui-monospace,monospace;max-height:40vh;overflow:auto}
+</style>
+</head>
+<body>
+<canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+<div id="status">loading…</div>
+<div id="m2w_error"><div><b>The client has stopped.</b><pre id="m2w_error_text"></pre>Reload the page to start again.</div></div>
+<script>
+// The client shell - OURS, minimal. No
+// counting of GL calls or other instrumentation on the hot path
+// (the lesson: a counter in the shell slowed the client down 60x).
+// The client itself reads the URL parameters (compat/runtime.js, m2w.options):
+// ?scale, ?return, ?bridge, ?lang, ?deflang, ?fps, ?corpusMB, ?noprefetch,
+// ?nofetch.
+// m2w.config.bridge = the address of the WebSocket bridge (wss://host[:port]). Empty = the
+// same server as the page (/to/...). Filled in by link_client.py from build/port/private/bridge.txt.
+window.m2w = { config: { bridge: "__BRIDGE__" } };
+var statusEl = document.getElementById("status");
+var Module = {
+  /// Engine files get `?v=<build time>`, so a new build is never served from cache.
+  locateFile: function (p) { return p + "?v=__VERSION__"; },
+  canvas: document.getElementById("canvas"),
+  /// Engine start-up text in the middle of the screen; empty = hide it.
+  setStatus: function (t) {
+    if (!statusEl) return;
+    statusEl.textContent = t;
+    if (!t) statusEl.className = "done";
+  },
+  /// Engine stdout to the browser console.
+  print: function (t) { console.log(t); },
+  /// Engine stderr to the browser console as errors.
+  printErr: function (t) { console.error(t); },
+  /// The engine stopped: shows the error overlay with the reason.
+  onAbort: function (what) {
+    var e = document.getElementById("m2w_error");
+    document.getElementById("m2w_error_text").textContent = String(what);
+    e.className = "visible";
+  }
+};
+window.addEventListener("error", function (ev) {
+  if (ev && ev.message && /RuntimeError|abort|unreachable/.test(ev.message)) Module.onAbort(ev.message);
+});
+</script>
+<script src="client.js?v=__VERSION__" async></script>
+<script src="preload.js?v=__VERSION__"></script>
+</body>
+</html>
