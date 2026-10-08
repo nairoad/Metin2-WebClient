@@ -18,6 +18,13 @@
 // added if missing.
 
 var m2w = globalThis.m2w = globalThis.m2w || {};
+
+// Who made this - one line in the console at start. Not required by the
+// license; if you keep it (or mention the project elsewhere), thank you!
+// See NOTICE.
+if (typeof document !== 'undefined')
+    console.log('Metin2 WebClient by nairoad - https://github.com/nairoad/Metin2-WebClient');
+
 m2w.config = m2w.config || {};
 
 // ---------------------------------------------------------------------------

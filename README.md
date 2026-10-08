@@ -186,7 +186,8 @@ Found a vulnerability? Report it privately - see [SECURITY.md](SECURITY.md).
 ## License
 
 GPL-2.0-or-later for everything in this repository (required by LZO, which
-the client links). The engine sources, game data and the SDKs used by the
+the client links). Copyright (C) 2026 nairoad - see [LICENSE](LICENSE) and
+[NOTICE](NOTICE). The engine sources, game data and the SDKs used by the
 offline bakers are **not** part of this repository and not covered by it;
 their status is that of any Metin2 private server. The SpeedTree baker only
 calls the SDK on your machine - nothing from it ends up in `client.wasm`.
@@ -195,3 +196,9 @@ calls the SDK on your machine - nothing from it ends up in `client.wasm`.
 
 - Ymir Entertainment - the Metin2 (TMP4) engine.
 - Built round by round with Claude (Anthropic).
+
+If this project helped you - you run it on your server, built on it, or just
+learned something from it - it would be nice if you mentioned where it came
+from. A short "thanks to nairoad" with a link here is plenty. It is not a
+condition of the license, just a way for me to see that the work found its
+way to people. Thank you!

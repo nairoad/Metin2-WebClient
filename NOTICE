@@ -1,0 +1,32 @@
+Metin2 WebClient
+Copyright (C) 2026 nairoad - https://github.com/nairoad/Metin2-WebClient
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option)
+any later version. It is distributed WITHOUT ANY WARRANTY; see the GNU
+General Public License in LICENSE for more details.
+
+Third-party parts keep their own licenses: LZO (GPL-2.0-or-later), CPython
+(PSF License), Crypto++ (Boost Software License), Emscripten (MIT /
+University of Illinois), the npm packages under bridge/ and tools/browser/
+(see their package-lock.json). The Metin2 engine sources, game data and the
+SDKs used by the offline bakers are not part of this repository and are not
+covered by this license.
+
+
+A small request
+
+If this project helped you - you run it on your server, built on it or
+just learned something from it - it would be really nice if you mentioned
+where it came from. A short "thanks to nairoad" with a link to the
+repository is plenty. It is not a condition of the license, just a way for
+me to see that the work found its way to people.
+
+The client prints one line to the browser console when it starts:
+
+    Metin2 WebClient by nairoad - https://github.com/nairoad/Metin2-WebClient
+
+You are free to remove it, but I would be glad if you kept it.
+
+Thank you, and have fun.

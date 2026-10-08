@@ -187,7 +187,8 @@ Znalazłeś lukę? Zgłoś ją prywatnie - zob. [SECURITY.md](SECURITY.md).
 ## Licencja
 
 GPL-2.0-or-later dla wszystkiego w tym repozytorium (wymusza to LZO, które
-klient linkuje). Źródła silnika, dane gry i SDK używane przez wypalarki
+klient linkuje). Copyright (C) 2026 nairoad - zob. [LICENSE](LICENSE) i
+[NOTICE](NOTICE). Źródła silnika, dane gry i SDK używane przez wypalarki
 offline **nie** są częścią tego repozytorium i nie obejmuje ich ta
 licencja; ich status jest taki, jak każdego serwera prywatnego Metin2.
 Wypalarka SpeedTree tylko woła SDK na Twoim komputerze - nic z niego nie
@@ -197,3 +198,9 @@ trafia do `client.wasm`.
 
 - Ymir Entertainment - silnik Metin2 (TMP4).
 - Powstało runda po rundzie z Claude (Anthropic).
+
+Jeśli ten projekt Ci się przydał - uruchamiasz go na swoim serwerze,
+budujesz na nim coś własnego albo po prostu czegoś się z niego nauczyłeś -
+byłoby mi miło, gdybyś wspomniał, skąd pochodzi. Krótkie „thanks to nairoad”
+z linkiem tutaj w zupełności wystarczy. To nie jest warunek licencji, tylko
+sposób, żebym wiedział, że ta praca do kogoś trafiła. Dzięki!
